@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Theory Visualizations</title>
+    <!-- โหลด Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .header h1 { margin: 0 0 10px 0; font-size: 28px; }
+        .header p { margin: 0; color: #cbd5e1; font-size: 16px; }
+        .student-info {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 15px 20px;
+            background-color: var(--card-bg);
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+        
+        .algo-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: none;
+            border: 1px solid #e2e8f0;
+        }
+        .algo-section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .section-header { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0; }
+        .section-header h2 { margin: 0 0 5px 0; color: #0f172a; }
+        .section-header p { margin: 0; color: var(--text-muted); }
+        
+        .control-panel {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-weight: 600; font-size: 14px; color: #334155; }
+        input[type="range"] { width: 150px; cursor: pointer; }
+        select { padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-family: inherit; }
+        
+        .val-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: #64748b; }
+        .btn-secondary:hover { background-color: #475569; }
+        
+        .plot-area {
+            width: 100%;
+            height: 500px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+        
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: #eff6ff;
+            border-left: 5px solid var(--primary);
+            border-radius: 0 10px 10px 0;
+            line-height: 1.6;
+        }
+        .result-box h4 { margin: 0 0 10px 0; color: #1e40af; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📊 Machine Learning Theory Visualizations</h1>
+        <p>Interactive Educational Tool for Algorithm Examination</p>
+        <div class="student-info">
+            🧑‍💻 จัดทำโดย: นายณัฐภัทร จันทร์บุตรราช (หัวหน้ากลุ่ม) และสมาชิก
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="openTab('knn')">1. KNN Classification (5 pts)</button>
+            <button class="tab-btn" onclick="openTab('knn-reg')">2. KNN Regression (5 pts)</button>
+            <button class="tab-btn" onclick="openTab('kmeans')">3. K-Means Clustering (5 pts)</button>
+        </div>
+
+        <!-- Section 1: KNN Classification -->
+        <div id="knn" class="algo-section active">
+            <div class="section-header">
+                <h2>1. K-Nearest Neighbor (KNN Classification)</h2>
+                <p>จำแนกคลาสของข้อมูลใหม่ (Query Point) โดยใช้การโหวตจากเพื่อนบ้าน K ตัวที่ใกล้ที่สุด (Majority Vote)</p>
+            </div>
+            <div class="control-panel">
+                <div class="input-group">
+                    <label>จำนวนเพื่อนบ้าน (K):</label>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="range" id="knn-k" min="1" max="5" value="3" oninput="runKNN()">
+                        <span id="knn-k-val" class="val-badge">K = 3</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>พิกัด X (จุดทดสอบ):</label>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="range" id="knn-x" min="1" max="9" step="0.5" value="4" oninput="runKNN()">
+                        <span id="knn-x-val" class="val-badge">X = 4</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>พิกัด Y (จุดทดสอบ):</label>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="range" id="knn-y" min="1" max="9" step="0.5" value="5" oninput="runKNN()">
+                        <span id="knn-y-val" class="val-badge">Y = 5</span>
+                    </div>
+                </div>
+            </div>
+            <div id="plot-knn" class="plot-area"></div>
+            <div class="result-box" id="knn-result">กำลังคำนวณ...</div>
+        </div>
+
+        <!-- Section 2: KNN Regression -->
+        <div id="knn-reg" class="algo-section">
+            <div class="section-header">
+                <h2>2. K-Nearest Neighbor Regression</h2>
+                <p>พยากรณ์ค่าตัวเลข (เช่น ราคาบ้าน) โดยใช้ค่าเฉลี่ย (Simple Mean) หรือค่าเฉลี่ยถ่วงน้ำหนัก (Weighted Mean) ของกลุ่มเพื่อนบ้าน</p>
+            </div>
+            <div class="control-panel">
+                <div class="input-group">
+                    <label>จำนวนเพื่อนบ้าน (K):</label>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="range" id="reg-k" min="1" max="7" value="3" oninput="runKNNReg()">
+                        <span id="reg-k-val" class="val-badge">K = 3</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>ขนาดพื้นที่ (ตารางเมตร):</label>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="range" id="reg-x" min="50" max="100" step="1" value="72" oninput="runKNNReg()">
+                        <span id="reg-x-val" class="val-badge">72 ตร.ม.</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>วิธีการคำนวณ (Weighting):</label>
+                    <select id="reg-mode" onchange="runKNNReg()">
+                        <option value="weighted">Weighted Average (1/d²)</option>
+                        <option value="simple">Simple Average (Mean)</option>
+                    </select>
+                </div>
+            </div>
+            <div id="plot-knn-reg" class="plot-area"></div>
+            <div class="result-box" id="reg-result">กำลังคำนวณ...</div>
+        </div>
+
+        <!-- Section 3: K-Means -->
+        <div id="kmeans" class="algo-section">
+            <div class="section-header">
+                <h2>3. K-Means Clustering</h2>
+                <p>จำลองขั้นตอนอัลกอริทึมจัดกลุ่ม (Unsupervised Learning) ทีละขั้นตอน: Assign จุดเข้ากลุ่ม &rarr; Update Centroid</p>
+            </div>
+            <div class="control-panel">
+                <button class="btn" onclick="stepKMeans()">▶ สเต็ปถัดไป (Next Step)</button>
+                <button class="btn btn-secondary" onclick="resetKMeans()">🔄 รีเซ็ต (Reset)</button>
+                <div style="margin-left: 20px; padding: 8px 16px; background: white; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 600;">
+                    สถานะ: <span id="kmeans-status" style="color: var(--primary);">จุดเริ่มต้น (รอบที่ 0)</span>
+                </div>
+            </div>
+            <div id="plot-kmeans" class="plot-area"></div>
+            <div class="result-box" id="kmeans-result">กดปุ่ม <b>"สเต็ปถัดไป"</b> เพื่อเริ่มกระบวนการจัดกลุ่ม</div>
+        </div>
+    </div>
+
+    <!-- Scripts for Logic and Plotting -->
+    <script>
+        // --- Tab Management ---
+        function openTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.algo-section').forEach(s => s.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            // Re-render plots to fix sizing issues when hidden
+            if(tabId === 'knn') runKNN();
+            if(tabId === 'knn-reg') runKNNReg();
+            if(tabId === 'kmeans') renderKMeans();
+        }
+
+        // --- 1. KNN Classification Logic ---
+        const knnData = [
+            {id: 'A', x: 2, y: 3, cls: 'Class A', color: '#ef4444'},
+            {id: 'B', x: 3, y: 5, cls: 'Class B', color: '#3b82f6'},
+            {id: 'C', x: 6, y: 8, cls: 'Class B', color: '#3b82f6'},
+            {id: 'D', x: 7, y: 6, cls: 'Class B', color: '#3b82f6'},
+            {id: 'E', x: 5, y: 4, cls: 'Class A', color: '#ef4444'}
+        ];
+
+        function runKNN() {
+            const k = parseInt(document.getElementById('knn-k').value);
+            const qx = parseFloat(document.getElementById('knn-x').value);
+            const qy = parseFloat(document.getElementById('knn-y').value);
+            
+            document.getElementById('knn-k-val').innerText = 'K = ' + k;
+            document.getElementById('knn-x-val').innerText = 'X = ' + qx;
+            document.getElementById('knn-y-val').innerText = 'Y = ' + qy;
+
+            // Calculate distances
+            let points = knnData.map(p => {
+                p.dist = Math.hypot(p.x - qx, p.y - qy);
+                return p;
+            });
+            points.sort((a,b) => a.dist - b.dist);
+            let neighbors = points.slice(0, k);
+            
+            // Majority vote
+            let votes = {'Class A': 0, 'Class B': 0};
+            neighbors.forEach(n => votes[n.cls]++);
+            let winner = votes['Class A'] >= votes['Class B'] ? 'Class A' : 'Class B';
+            let maxDist = neighbors[neighbors.length - 1].dist;
+
+            // Update UI Result
+            let resHtml = `<h4>📝 ผลการคำนวณและเสียงโหวต (Majority Vote)</h4>`;
+            resHtml += `<ul>`;
+            neighbors.forEach((n, i) => {
+                resHtml += `<li>เพื่อนบ้านอันดับ ${i+1}: จุด ${n.id} (${n.cls}) - ระยะห่าง: ${n.dist.toFixed(2)}</li>`;
+            });
+            resHtml += `</ul>`;
+            resHtml += `<b>สรุปผล:</b> Class A ได้ ${votes['Class A']} เสียง, Class B ได้ ${votes['Class B']} เสียง &rarr; จุดทดสอบถูกจัดอยู่ใน <b><span style="color:${winner==='Class A'?'#ef4444':'#3b82f6'};">${winner}</span></b>`;
+            document.getElementById('knn-result').innerHTML = resHtml;
+
+            // Plotly
+            let traces = [];
+            ['Class A', 'Class B'].forEach(c => {
+                let pts = knnData.filter(p => p.cls === c);
+                traces.push({
+                    x: pts.map(p => p.x), y: pts.map(p => p.y),
+                    mode: 'markers+text', text: pts.map(p => p.id),
+                    textposition: 'bottom right', name: c,
+                    marker: { size: 14, color: pts[0].color }
+                });
+            });
+            
+            // Query point
+            traces.push({
+                x: [qx], y: [qy], mode: 'markers+text', text: ['Query'],
+                textposition: 'top center', name: 'จุดทดสอบ',
+                marker: { size: 16, color: '#10b981', symbol: 'star' }
+            });
+
+            let shapes = [{
+                type: 'circle', xref: 'x', yref: 'y',
+                x0: qx - maxDist, y0: qy - maxDist,
+                x1: qx + maxDist, y1: qy + maxDist,
+                line: { color: '#10b981', dash: 'dash' },
+                fillcolor: 'rgba(16,185,129,0.1)'
+            }];
+            neighbors.forEach(n => {
+                shapes.push({
+                    type: 'line', xref: 'x', yref: 'y',
+                    x0: qx, y0: qy, x1: n.x, y1: n.y,
+                    line: { color: '#64748b', width: 1, dash: 'dot' }
+                });
+            });
+
+            Plotly.newPlot('plot-knn', traces, {
+                title: `รัศมีค้นหาเพื่อนบ้าน (K=${k}, d=${maxDist.toFixed(2)})`,
+                xaxis: { range: [0, 10] }, yaxis: { range: [0, 10] },
+                shapes: shapes, margin: {t:40, l:40, r:40, b:40}
+            }, {responsive: true});
+        }
+
+        // --- 2. KNN Regression Logic ---
+        const regData = [
+            {x: 50, y: 950}, {x: 55, y: 1000}, {x: 60, y: 1050}, {x: 65, y: 1150},
+            {x: 70, y: 1200}, {x: 75, y: 1250}, {x: 80, y: 1300}, {x: 85, y: 1350},
+            {x: 90, y: 1500}, {x: 100, y: 1600}
+        ];
+
+        function runKNNReg() {
+            const k = parseInt(document.getElementById('reg-k').value);
+            const qx = parseFloat(document.getElementById('reg-x').value);
+            const mode = document.getElementById('reg-mode').value;
+            
+            document.getElementById('reg-k-val').innerText = 'K = ' + k;
+            document.getElementById('reg-x-val').innerText = qx + ' ตร.ม.';
+
+            // Calculate distances and weights
+            let points = regData.map(p => {
+                let d = Math.abs(p.x - qx);
+                let w = 1 / (d * d + 1e-5);
+                return {...p, dist: d, weight: w};
+            });
+            points.sort((a,b) => a.dist - b.dist);
+            let neighbors = points.slice(0, k);
+
+            let predY = 0;
+            if(mode === 'simple') {
+                predY = neighbors.reduce((sum, n) => sum + n.y, 0) / k;
+            } else {
+                let num = neighbors.reduce((sum, n) => sum + (n.weight * n.y), 0);
+                let den = neighbors.reduce((sum, n) => sum + n.weight, 0);
+                predY = num / den;
+            }
+
+            // Update UI Result
+            let resHtml = `<h4>📝 ผลการคำนวณราคาประเมิน (${mode === 'simple' ? 'Simple Mean' : 'Weighted Mean'})</h4>`;
+            resHtml += `<ul>`;
+            neighbors.forEach((n, i) => {
+                resHtml += `<li>บ้านที่ ${i+1}: พื้นที่ ${n.x} ตร.ม. | ราคา ${n.y}k | ระยะ d = ${n.dist.toFixed(1)} ${mode==='weighted' ? `| นน. w = ${n.weight.toFixed(4)}` : ''}</li>`;
+            });
+            resHtml += `</ul>`;
+            resHtml += `<b>ผลการพยากรณ์:</b> บ้านพื้นที่ ${qx} ตร.ม. น่าจะมีราคาประมาณ <b><span style="color:#d97706; font-size:18px;">${predY.toFixed(2)} พันบาท</span></b>`;
+            document.getElementById('reg-result').innerHTML = resHtml;
+
+            // Generate Curve
+            let curveX = [], curveY = [];
+            for(let x = 45; x <= 105; x++) {
+                let subPts = regData.map(p => ({y: p.y, d: Math.abs(p.x - x), w: 1/(Math.pow(Math.abs(p.x - x), 2)+1e-5)}));
+                subPts.sort((a,b) => a.d - b.d);
+                let subN = subPts.slice(0, k);
+                let y = 0;
+                if(mode === 'simple') y = subN.reduce((s,n)=>s+n.y, 0)/k;
+                else y = subN.reduce((s,n)=>s+(n.w*n.y), 0)/subN.reduce((s,n)=>s+n.w, 0);
+                curveX.push(x); curveY.push(y);
+            }
+
+            let traces = [
+                { x: regData.map(p=>p.x), y: regData.map(p=>p.y), mode: 'markers', name: 'ข้อมูลจริง', marker: {size:10, color:'#3b82f6'} },
+                { x: curveX, y: curveY, mode: 'lines', name: 'เส้นแนวโน้มการพยากรณ์', line: {color: '#f59e0b', width: 3} },
+                { x: [qx], y: [predY], mode: 'markers+text', text: [`ทำนาย: ${predY.toFixed(0)}k`], textposition: 'top center', name: 'จุดที่คาดการณ์', marker: {size:16, color:'#dc2626', symbol:'diamond'} }
+            ];
+
+            Plotly.newPlot('plot-knn-reg', traces, {
+                title: 'กราฟ Regression Curve',
+                xaxis: { title: 'พื้นที่ (ตร.ม.)', range: [40, 110] }, yaxis: { title: 'ราคา (พันบาท)', range: [800, 1700] },
+                margin: {t:40, l:50, r:40, b:40}
+            }, {responsive: true});
+        }
+
+        // --- 3. K-Means Logic ---
+        const kmPts = [
+            {id: 'A', x: 2, y: 3}, {id: 'B', x: 3, y: 4}, {id: 'C', x: 4, y: 5},
+            {id: 'D', x: 8, y: 8}, {id: 'E', x: 9, y: 9}, {id: 'F', x: 8, y: 10}
+        ];
+        let kmState = { step: 0, c1: {x:2, y:3}, c2: {x:9, y:9}, assign: {} };
+
+        function resetKMeans() {
+            kmState = { step: 0, c1: {x:2, y:3}, c2: {x:9, y:9}, assign: {} };
+            document.getElementById('kmeans-status').innerText = "จุดเริ่มต้น (รอบที่ 0)";
+            document.getElementById('kmeans-result').innerHTML = `กำหนด Centroid เริ่มต้น: C1(2,3) และ C2(9,9)<br>กดปุ่ม <b>"สเต็ปถัดไป"</b> เพื่อวัดระยะและจัดกลุ่ม`;
+            renderKMeans();
+        }
+
+        function stepKMeans() {
+            if(kmState.step % 2 === 0) {
+                // Assign Step
+                let c1Count = 0, c2Count = 0;
+                kmPts.forEach(p => {
+                    let d1 = Math.hypot(p.x - kmState.c1.x, p.y - kmState.c1.y);
+                    let d2 = Math.hypot(p.x - kmState.c2.x, p.y - kmState.c2.y);
+                    kmState.assign[p.id] = d1 <= d2 ? 1 : 2;
+                    if(d1<=d2) c1Count++; else c2Count++;
+                });
+                kmState.step++;
+                document.getElementById('kmeans-status').innerText = `รอบที่ ${Math.ceil(kmState.step/2)}: จัดกลุ่ม (Cluster Assignment)`;
+                document.getElementById('kmeans-result').innerHTML = `<h4>📝 Step: วัดระยะทางและจัดกลุ่ม</h4>
+                นำข้อมูลทุกจุดวัดระยะไปยัง C1 และ C2<br>
+                กลุ่ม 1 มีสมาชิก ${c1Count} จุด | กลุ่ม 2 มีสมาชิก ${c2Count} จุด<br>
+                กดปุ่ม <b>"สเต็ปถัดไป"</b> เพื่ออัปเดตตำแหน่ง Centroid ไปที่ค่าเฉลี่ยของกลุ่ม`;
+            } else {
+                // Update Step
+                let sum1x=0, sum1y=0, n1=0;
+                let sum2x=0, sum2y=0, n2=0;
+                kmPts.forEach(p => {
+                    if(kmState.assign[p.id] === 1) { sum1x+=p.x; sum1y+=p.y; n1++; }
+                    else { sum2x+=p.x; sum2y+=p.y; n2++; }
+                });
+                
+                let newC1 = {x: n1===0 ? kmState.c1.x : sum1x/n1, y: n1===0 ? kmState.c1.y : sum1y/n1};
+                let newC2 = {x: n2===0 ? kmState.c2.x : sum2x/n2, y: n2===0 ? kmState.c2.y : sum2y/n2};
+                
+                let diff = Math.hypot(kmState.c1.x - newC1.x, kmState.c1.y - newC1.y) + Math.hypot(kmState.c2.x - newC2.x, kmState.c2.y - newC2.y);
+                
+                kmState.c1 = newC1; kmState.c2 = newC2;
+                kmState.step++;
+                
+                document.getElementById('kmeans-status').innerText = `รอบที่ ${Math.floor(kmState.step/2)}: อัปเดต Centroid`;
+                document.getElementById('kmeans-result').innerHTML = `<h4>📝 Step: ปรับตำแหน่งศูนย์กลาง (Update Centroid)</h4>
+                ตำแหน่ง C1 ใหม่: <b>(${newC1.x.toFixed(2)}, ${newC1.y.toFixed(2)})</b><br>
+                ตำแหน่ง C2 ใหม่: <b>(${newC2.x.toFixed(2)}, ${newC2.y.toFixed(2)})</b><br>
+                ${diff < 0.01 ? '<br><b style="color:#10b981;">✅ อัลกอริทึมลู่เข้า (Converged) หยุดการทำงานได้!</b>' : 'กดปุ่ม "สเต็ปถัดไป" เพื่อทำซ้ำกระบวนการ'}`;
+            }
+            renderKMeans();
+        }
+
+        function renderKMeans() {
+            let pts1 = kmPts.filter(p => kmState.step === 0 || kmState.assign[p.id] === 1);
+            let pts2 = kmPts.filter(p => kmState.step > 0 && kmState.assign[p.id] === 2);
+            
+            let traces = [];
+            traces.push({
+                x: pts1.map(p=>p.x), y: pts1.map(p=>p.y), mode: 'markers+text', text: pts1.map(p=>p.id),
+                textposition: 'bottom right', name: kmState.step === 0 ? 'ข้อมูลทั้งหมด' : 'กลุ่ม 1',
+                marker: { size: 14, color: kmState.step === 0 ? '#64748b' : '#ef4444' }
+            });
+            if(kmState.step > 0) {
+                traces.push({
+                    x: pts2.map(p=>p.x), y: pts2.map(p=>p.y), mode: 'markers+text', text: pts2.map(p=>p.id),
+                    textposition: 'top left', name: 'กลุ่ม 2',
+                    marker: { size: 14, color: '#3b82f6' }
+                });
+            }
+            traces.push({
+                x: [kmState.c1.x], y: [kmState.c1.y], mode: 'markers+text', text: ['C1'], textposition: 'top center',
+                name: 'Centroid 1', marker: { size: 18, symbol: 'x', color: '#991b1b', line: {width:3} }
+            });
+            traces.push({
+                x: [kmState.c2.x], y: [kmState.c2.y], mode: 'markers+text', text: ['C2'], textposition: 'bottom center',
+                name: 'Centroid 2', marker: { size: 18, symbol: 'x', color: '#1e40af', line: {width:3} }
+            });
+
+            Plotly.newPlot('plot-kmeans', traces, {
+                title: 'การกระจายข้อมูลและการย้ายตำแหน่ง Centroid',
+                xaxis: { range: [0, 11], dtick: 1 }, yaxis: { range: [0, 11], dtick: 1 },
+                margin: {t:40, l:40, r:40, b:40}
+            }, {responsive: true});
+        }
+
+        // Initialize on load
+        runKNN();
+        runKNNReg();
+        renderKMeans();
+    </script>
+</body>
+</html>
