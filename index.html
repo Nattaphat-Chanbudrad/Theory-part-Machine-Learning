@@ -32,15 +32,6 @@
         }
         .header h1 { margin: 0 0 10px 0; font-size: 28px; }
         .header p { margin: 0; color: #cbd5e1; font-size: 16px; }
-        .student-info {
-            display: inline-block;
-            background: rgba(255,255,255,0.1);
-            padding: 8px 16px;
-            border-radius: 20px;
-            margin-top: 15px;
-            font-size: 14px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
         
         .container {
             max-width: 1200px;
@@ -146,6 +137,27 @@
             line-height: 1.6;
         }
         .result-box h4 { margin: 0 0 10px 0; color: #1e40af; }
+        
+        .theory-box {
+            margin-top: 15px;
+            padding: 20px;
+            background: #f8fafc;
+            border-left: 5px solid #64748b;
+            border-radius: 0 10px 10px 0;
+            line-height: 1.6;
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .theory-box h4 { margin: 0 0 10px 0; color: #475569; }
+        .theory-box p { margin: 8px 0; font-size: 14.5px; }
+        .code-inline {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #0f172a;
+        }
     </style>
 </head>
 <body>
@@ -153,17 +165,14 @@
     <div class="header">
         <h1>📊 Machine Learning Theory Visualizations</h1>
         <p>Interactive Educational Tool for Algorithm Examination</p>
-        <div class="student-info">
-            🧑‍💻 จัดทำโดย: นายณัฐภัทร จันทร์บุตรราช (หัวหน้ากลุ่ม) และสมาชิก
-        </div>
     </div>
 
     <div class="container">
         <!-- Tabs -->
         <div class="tab-container">
-            <button class="tab-btn active" onclick="openTab('knn')">1. KNN Classification (5 pts)</button>
-            <button class="tab-btn" onclick="openTab('knn-reg')">2. KNN Regression (5 pts)</button>
-            <button class="tab-btn" onclick="openTab('kmeans')">3. K-Means Clustering (5 pts)</button>
+            <button class="tab-btn active" onclick="openTab('knn')">1. KNN Classification</button>
+            <button class="tab-btn" onclick="openTab('knn-reg')">2. KNN Regression</button>
+            <button class="tab-btn" onclick="openTab('kmeans')">3. K-Means Clustering</button>
         </div>
 
         <!-- Section 1: KNN Classification -->
@@ -183,20 +192,28 @@
                 <div class="input-group">
                     <label>พิกัด X (จุดทดสอบ):</label>
                     <div style="display:flex; gap:10px; align-items:center;">
-                        <input type="range" id="knn-x" min="1" max="9" step="0.5" value="4" oninput="runKNN()">
-                        <span id="knn-x-val" class="val-badge">X = 4</span>
+                        <input type="range" id="knn-x" min="1" max="9" step="0.5" value="7" oninput="runKNN()">
+                        <span id="knn-x-val" class="val-badge">X = 7</span>
                     </div>
                 </div>
                 <div class="input-group">
                     <label>พิกัด Y (จุดทดสอบ):</label>
                     <div style="display:flex; gap:10px; align-items:center;">
-                        <input type="range" id="knn-y" min="1" max="9" step="0.5" value="5" oninput="runKNN()">
-                        <span id="knn-y-val" class="val-badge">Y = 5</span>
+                        <input type="range" id="knn-y" min="1" max="9" step="0.5" value="7" oninput="runKNN()">
+                        <span id="knn-y-val" class="val-badge">Y = 7</span>
                     </div>
                 </div>
             </div>
             <div id="plot-knn" class="plot-area"></div>
+            
             <div class="result-box" id="knn-result">กำลังคำนวณ...</div>
+            
+            <div class="theory-box" id="knn-theory">
+                <h4>🧠 แนวคิดและวิธีการคำนวณ (Theory)</h4>
+                <p><b>1. การวัดระยะทาง (Distance Metric):</b> คำนวณระยะห่างระหว่างจุดทดสอบกับจุดข้อมูลอื่นๆ ทุกจุดด้วยสมการ <b>Euclidean Distance</b><br>
+                <span class="code-inline">d = &radic;[(x₂ - x₁)&sup2; + (y₂ - y₁)&sup2;]</span></p>
+                <p><b>2. การตัดสินใจ (Majority Vote):</b> เลือกระยะทางที่สั้นที่สุดตามจำนวน <b>K</b> ตัวที่กำหนด จากนั้นนับจำนวนคลาสของเพื่อนบ้านที่เลือกมา คลาสใดที่มีจำนวนเสียงโหวตมากที่สุด (Majority) จะถูกนำมาใช้เป็นผลลัพธ์การทำนายให้กับจุดทดสอบนั้น</p>
+            </div>
         </div>
 
         <!-- Section 2: KNN Regression -->
@@ -229,7 +246,16 @@
                 </div>
             </div>
             <div id="plot-knn-reg" class="plot-area"></div>
+            
             <div class="result-box" id="reg-result">กำลังคำนวณ...</div>
+            
+            <div class="theory-box" id="reg-theory">
+                <h4>🧠 แนวคิดและวิธีการคำนวณ (Theory)</h4>
+                <p><b>1. การค้นหาเพื่อนบ้าน:</b> วัดระยะห่างของจุดทดสอบกับข้อมูลชุดฝึกด้วย <b>Euclidean / Absolute Distance</b> แล้วเลือกมา K ตัวที่ใกล้ที่สุด</p>
+                <p><b>2. การพยากรณ์ค่าตัวเลขต่อเนื่อง:</b><br>
+                &bull; <b>Simple Average:</b> นำค่าผลลัพธ์ (Target) ของเพื่อนบ้าน K ตัวมาหาค่าเฉลี่ยธรรมดา <span class="code-inline">ŷ = (&sum;y) / K</span><br>
+                &bull; <b>Weighted Average:</b> ทำการถ่วงน้ำหนักด้วยส่วนกลับของระยะทางยกกำลังสอง <span class="code-inline">w = 1 / d&sup2;</span> (ยิ่งใกล้ยิ่งส่งผลมาก) แล้วหาค่าเฉลี่ยแบบถ่วงน้ำหนักด้วยสมการ <span class="code-inline">ŷ = (&sum;w&middot;y) / &sum;w</span></p>
+            </div>
         </div>
 
         <!-- Section 3: K-Means -->
@@ -246,7 +272,14 @@
                 </div>
             </div>
             <div id="plot-kmeans" class="plot-area"></div>
+            
             <div class="result-box" id="kmeans-result">กดปุ่ม <b>"สเต็ปถัดไป"</b> เพื่อเริ่มกระบวนการจัดกลุ่ม</div>
+            
+            <div class="theory-box" id="kmeans-theory">
+                <h4>🧠 แนวคิดและวิธีการคำนวณ (Theory)</h4>
+                <p><b>1. การจัดกลุ่ม (Cluster Assignment):</b> คำนวณระยะห่างระหว่างข้อมูลแต่ละจุดไปยังจุดศูนย์กลาง (Centroids) ทั้งหมด จากนั้นจะจัดให้จุดข้อมูลนั้นสังกัดอยู่ในกลุ่มเดียวกับ Centroid ที่มีระยะทางใกล้ที่สุด</p>
+                <p><b>2. การอัปเดตศูนย์กลาง (Update Centroid):</b> ภายหลังจากการจัดกลุ่มเสร็จสิ้น จะทำการคำนวณหา <b>ค่าเฉลี่ย (Mean)</b> ของพิกัด แกน X และ Y จากสมาชิกทุกตัวที่อยู่ภายในกลุ่มเดียวกัน เพื่อนำไปกำหนดเป็นตำแหน่งที่ตั้งใหม่ของ Centroid <span class="code-inline">C_new = (x̄, ȳ)</span> กระบวนการนี้จะทำซ้ำจนกว่า Centroid จะหยุดการเคลื่อนที่ (Converged)</p>
+            </div>
         </div>
     </div>
 
